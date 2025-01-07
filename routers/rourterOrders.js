@@ -35,13 +35,14 @@ if (DNIClient == undefined){
     return res.status(400).json({ error: "no DNIClient in body"})
 }
 database.connect();
-let insertedOrder = database.query("INSERT INTO orders (DNIClient, state) VALUES (?,0",
+let insertedOrder = await database.query("INSERT INTO orders (DNIClient, state) VALUES (?,0",
     [DNIClient])
 database.disConnect();
 res.json({ inserted: insertedOrder})
-
-
 })
+
+
+
 
 
 routerOrders.post("/:idOrder/items", async (req, res) => {
@@ -67,13 +68,51 @@ routerOrders.post("/:idOrder/items", async (req, res) => {
         return res.status(400).json({ error: "item already exists"})
     }
 
-
-
     await database.query("INSERT INTO orders_items (idOrder, idItem,units) VALUES (?,?,?)",
         [idOrder,idItem,units])
         database.disConnect();
         res.json({ inserted: true})
 })
+
+routerOrders.put("/:idOrder/items/:idItem", async (req,res) => {
+   let idOrder = req.params.idOrder
+   if ( idOrder == undefined){
+    return res.status(400).json({ error: "no idItem in params"})
+   } 
+   let units = req.body.units
+   if (units == undefined){
+    return res.status(400).json({ error: "no units in body"})
+   }
+   database.connect();
+   await database.query("UPDATE orders_items SET units = ? WHERE idOrder = ? AND idItem = ?", 
+    [units,idOrder,idItem])
+
+    database.disConnect();
+    res.json({ modified: true })
+
+})
+
+
+routerOrders.put("/:id", async (req, res) => {
+    let idOrder = req.params.id
+    if ( idOrder == undefined){
+        return res.status(400).json({ error: "no idOrder in params"})
+    }
+
+    let state = req.body.state
+    if ( state == undefined){
+        return res.status(400).json({ error: "no state in params"})
+    }
+   // state = parseInt(state);
+
+    database.connect();
+    await database.query("UPDATE orders SET state = ? WHERE id = ?",
+        [state,idOrder])
+
+        database.disConnect();
+        res.json({ modified: true})
+})
+
 
 
 module.exports = routerOrders

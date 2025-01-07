@@ -34,8 +34,6 @@ routerItems.get("/:id", async (req, res) => {
     database.disConnect();
     res.json(items)
 
-
 })
-
 
 module.exports = routerItems
