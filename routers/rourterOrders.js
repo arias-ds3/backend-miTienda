@@ -1,5 +1,6 @@
 const express = require("express")
-const database = require("../database")
+const database = require("../database");
+const { isDataView } = require("util/types");
 
 const routerOrders = express.Router();
 
@@ -28,6 +29,23 @@ routerOrders.get("/:id", async (req, res) => {
     res.json(orders)
 
 })
+
+routerOrders.get("/:id/items", async (req, res) => {
+    let idOrder = req.params.id
+    if (idOrder == undefined){
+        return res.status.apply(400).json({ error: "no id param"})
+    }
+    database.connect();
+
+    let ordersItems = await database.query(
+        "SELECT * FROM orders_items JOIN items ON orders_items.idItem = items.id WHERE orders_Items.idOrder = ?",
+    [idOrder])
+
+    database.disConnect();
+    res.json(ordersItems)
+
+})
+
 
 routerOrders.post("/", async (req,res ) => {
 let DNIClient = req.body.DNIClient;
